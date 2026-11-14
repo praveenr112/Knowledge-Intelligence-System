@@ -1,5 +1,5 @@
 import boto3
-from botocore.exceptions import clienterror
+from botocore.exceptions import ClientError
 from config import config
 
 class S3Storage:
@@ -18,7 +18,7 @@ class S3Storage:
             self.s3.upload_fileobj(file_obj, self.bucket, filename)
             print(f"File {filename} uploaded successfully to S3 bucket {self.bucket}.")
             return True
-        except clienterror as e:
+        except ClientError as e:
             print(f"Error uploading file {filename} to S3: {e}")
             return False
 
@@ -27,6 +27,6 @@ class S3Storage:
             response = self.s3.get_object(Bucket=self.bucket, Key=filename)
             print(f"File {filename} retrieved successfully from S3 bucket {self.bucket}.")
             return response['Body'].read()
-        except clienterror as e:
+        except ClientError as e:
             print(f"Error retrieving file {filename} from S3: {e}")
             return None

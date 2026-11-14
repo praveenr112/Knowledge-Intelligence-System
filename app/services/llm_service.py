@@ -1,5 +1,5 @@
 from langchain.chat_models import ChatOpenAI
-from langchain.chains import conversationretrievalchain
+from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
 from config import config
 
@@ -7,8 +7,9 @@ class LLMService:
     def __init__(self,vector_store):
         self.llm = ChatOpenAI(
             temperature=0.7,
-            model_name="gpt-3.5-turbo", 
-            openai_api_key=config.OPEN_API_KEY
+            model_name=config.GEMINI_CHAT_MODEL,
+            openai_api_key=config.require_gemini_api_key(),
+            openai_api_base=config.GEMINI_API_BASE,
             )
         
         self.memory = ConversationBufferMemory(
@@ -16,16 +17,11 @@ class LLMService:
             return_messages=True
             )
         
-        self.chain = ConversationRetrievalChain.from_llm(
+        self.chain = ConversationalRetrievalChain.from_llm(
             llm=self.llm,
-            retriever=vector_store.vectorstore.as_retriever(),
+            retriever=vector_store.vector_store.as_retriever(),
             memory=self.memory
         )
 
     def get_response(self, query):
-        try:
-            response = self.chain.run({"question": query})
-            return response['answer']
-        except Exception as e:
-            print(f"Error in LLMService.get_response: {e}")
-            return "Sorry, I encountered an error while processing your request."
+        return self.chain.run({"question": query})
